@@ -1,0 +1,274 @@
+{
+    "accessType": {
+        "16798": 1,
+        "16799": 1
+    },
+    "pagination": null,
+    "stats": null,
+    "metaData": null,
+    "data": [
+        {
+            "collectionUserId": 0,
+            "isReleased": true,
+            "url": "https://www.dndbeyond.com/monsters/16798-bandit",
+            "conditionImmunitiesHtml": "",
+            "sensesHtml": "",
+            "skillsHtml": "",
+            "stats": [
+                {
+                    "statId": 1,
+                    "name": null,
+                    "value": 11
+                },
+                {
+                    "statId": 2,
+                    "name": null,
+                    "value": 12
+                },
+                {
+                    "statId": 3,
+                    "name": null,
+                    "value": 12
+                },
+                {
+                    "statId": 4,
+                    "name": null,
+                    "value": 10
+                },
+                {
+                    "statId": 5,
+                    "name": null,
+                    "value": 10
+                },
+                {
+                    "statId": 6,
+                    "name": null,
+                    "value": 10
+                }
+            ],
+            "senses": [],
+            "savingThrows": [],
+            "skills": [],
+            "languages": [],
+            "hitPointDice": {
+                "diceCount": 2,
+                "diceValue": 8,
+                "diceMultiplier": 0,
+                "fixedValue": 2,
+                "diceString": "2d8 + 2"
+            },
+            "swarm": null,
+            "movements": [
+                {
+                    "movementId": 1,
+                    "speed": 30,
+                    "notes": null
+                }
+            ],
+            "homebrewStatus": 0,
+            "initiativeBonus": null,
+            "id": 16798,
+            "entityTypeId": 779871897,
+            "name": "Bandit",
+            "alignmentId": 19,
+            "sizeId": 4,
+            "typeId": 11,
+            "armorClass": 12,
+            "armorClassDescription": "(leather armor)  ",
+            "averageHitPoints": 11,
+            "passivePerception": 10,
+            "isHomebrew": false,
+            "challengeRatingId": 2,
+            "sourceId": 1,
+            "sourcePageNumber": 162,
+            "isLegendary": false,
+            "isMythic": false,
+            "hasLair": false,
+            "avatarUrl": "https://www.dndbeyond.com/avatars/4675/675/636747837794884984.jpeg",
+            "largeAvatarUrl": null,
+            "basicAvatarUrl": null,
+            "version": null,
+            "subTypes": [
+                5
+            ],
+            "environments": [
+                1,
+                2,
+                3,
+                4,
+                6,
+                11
+            ],
+            "tags": [
+                "NPC"
+            ],
+            "sources": [
+                {
+                    "sourceId": 1,
+                    "pageNumber": 162,
+                    "sourceType": 1
+                }
+            ],
+            "damageAdjustments": [],
+            "conditionImmunities": [],
+            "specialTraitsDescription": "",
+            "actionsDescription": "<p><em><strong>Scimitar.</strong> Melee Weapon Attack:</em> <span data-dicenotation=\"1d20+3\" data-rolltype=\"to hit\" data-rollaction=\"Scimitar\">+3</span> to hit, reach 5 ft., one target. <em>Hit:</em> 4 <span data-dicenotation=\"1d6+1\" data-rolltype=\"damage\" data-rollaction=\"Scimitar\" data-rolldamagetype=\"slashing\">(1d6 + 1)</span> slashing damage.</p>\n<p><em><strong>Light Crossbow.</strong> Ranged Weapon Attack:</em> <span data-dicenotation=\"1d20+3\" data-rolltype=\"to hit\" data-rollaction=\"Light Crossbow\">+3</span> to hit, range 80 ft./320 ft., one target. <em>Hit:</em> 5 <span data-dicenotation=\"1d8+1\" data-rolltype=\"damage\" data-rollaction=\"Light Crossbow\" data-rolldamagetype=\"piercing\">(1d8 + 1)</span> piercing damage.</p>",
+            "reactionsDescription": "",
+            "legendaryActionsDescription": "",
+            "mythicActionsDescription": "",
+            "bonusActionsDescription": "",
+            "characteristicsDescription": "<p>Bandits rove in gangs and are sometimes led by thugs, veterans, or spellcasters. Not all bandits are evil. Oppression, drought, disease, or famine can often drive otherwise honest folk to a life of banditry. Pirates are bandits of the high seas. They might be freebooters interested only in treasure and murder, or they might be privateers sanctioned by the crown to attack and plunder an enemy nation's vessels.</p>",
+            "lairDescription": "",
+            "languageDescription": " any one language (usually Common)  ",
+            "languageNote": "Any one language (usually Common)  ",
+            "hideCr": false,
+            "isLegacy": true
+        },
+        {
+            "collectionUserId": 0,
+            "isReleased": true,
+            "url": "https://www.dndbeyond.com/monsters/16799-bandit-captain",
+            "conditionImmunitiesHtml": "",
+            "sensesHtml": "",
+            "skillsHtml": "<a class=\"tooltip-hover skill-tooltip\" href=\"/sources/dnd/free-rules/playing-the-game#Skills\" aria-haspopup=\"true\" data-tooltip-href=\"/skills/2-tooltip\" data-tooltip-json-href=\"/skills/2/tooltip-json\">Athletics</a> <span data-dicenotation=\"1d20+4\" data-rolltype=\"check\" data-rollaction=\"Athletics\">+4</span>, <a class=\"tooltip-hover skill-tooltip\" href=\"/sources/dnd/free-rules/playing-the-game#Skills\" aria-haspopup=\"true\" data-tooltip-href=\"/skills/16-tooltip\" data-tooltip-json-href=\"/skills/16/tooltip-json\">Deception</a> <span data-dicenotation=\"1d20+4\" data-rolltype=\"check\" data-rollaction=\"Deception\">+4</span>",
+            "stats": [
+                {
+                    "statId": 1,
+                    "name": null,
+                    "value": 15
+                },
+                {
+                    "statId": 2,
+                    "name": null,
+                    "value": 16
+                },
+                {
+                    "statId": 3,
+                    "name": null,
+                    "value": 14
+                },
+                {
+                    "statId": 4,
+                    "name": null,
+                    "value": 14
+                },
+                {
+                    "statId": 5,
+                    "name": null,
+                    "value": 11
+                },
+                {
+                    "statId": 6,
+                    "name": null,
+                    "value": 14
+                }
+            ],
+            "senses": [],
+            "savingThrows": [
+                {
+                    "statId": 1,
+                    "bonusModifier": null
+                },
+                {
+                    "statId": 2,
+                    "bonusModifier": null
+                },
+                {
+                    "statId": 5,
+                    "bonusModifier": null
+                }
+            ],
+            "skills": [
+                {
+                    "skillId": 2,
+                    "value": 4,
+                    "additionalBonus": null
+                },
+                {
+                    "skillId": 16,
+                    "value": 4,
+                    "additionalBonus": null
+                }
+            ],
+            "languages": [],
+            "hitPointDice": {
+                "diceCount": 10,
+                "diceValue": 8,
+                "diceMultiplier": 0,
+                "fixedValue": 20,
+                "diceString": "10d8 + 20"
+            },
+            "swarm": null,
+            "movements": [
+                {
+                    "movementId": 1,
+                    "speed": 30,
+                    "notes": null
+                }
+            ],
+            "homebrewStatus": 0,
+            "initiativeBonus": null,
+            "id": 16799,
+            "entityTypeId": 779871897,
+            "name": "Bandit Captain",
+            "alignmentId": 19,
+            "sizeId": 4,
+            "typeId": 11,
+            "armorClass": 15,
+            "armorClassDescription": "(studded leather)  ",
+            "averageHitPoints": 65,
+            "passivePerception": 10,
+            "isHomebrew": false,
+            "challengeRatingId": 6,
+            "sourceId": 1,
+            "sourcePageNumber": 397,
+            "isLegendary": false,
+            "isMythic": false,
+            "hasLair": false,
+            "avatarUrl": "https://www.dndbeyond.com/avatars/0/180/636252761964421005.jpeg",
+            "largeAvatarUrl": "https://www.dndbeyond.com/avatars/0/181/636252761965117015.jpeg",
+            "basicAvatarUrl": "https://www.dndbeyond.com.com/avatars/67/600/636460651522533668.png",
+            "version": null,
+            "subTypes": [
+                5
+            ],
+            "environments": [
+                1,
+                2,
+                3,
+                4,
+                6,
+                11
+            ],
+            "tags": [
+                "NPC"
+            ],
+            "sources": [
+                {
+                    "sourceId": 1,
+                    "pageNumber": 397,
+                    "sourceType": 1
+                },
+                {
+                    "sourceId": 40,
+                    "pageNumber": null,
+                    "sourceType": 2
+                }
+            ],
+            "damageAdjustments": [],
+            "conditionImmunities": [],
+            "specialTraitsDescription": "",
+            "actionsDescription": "<p><em><strong>Multiattack.</strong></em> The captain makes three melee attacks: two with its scimitar and one with its dagger. Or the captain makes two ranged attacks with its daggers.</p>\n<p><em><strong>Scimitar.</strong> Melee Weapon Attack:</em> <span data-dicenotation=\"1d20+5\" data-rolltype=\"to hit\" data-rollaction=\"Scimitar\">+5</span> to hit, reach 5 ft., one target. <em>Hit:</em> 6 <span data-dicenotation=\"1d6+3\" data-rolltype=\"damage\" data-rollaction=\"Scimitar\" data-rolldamagetype=\"slashing\">(1d6 + 3)</span> slashing damage.</p>\n<p><em><strong>Dagger.</strong> Melee or <em>Ranged Weapon Attack:</em></em> <span data-dicenotation=\"1d20+5\" data-rolltype=\"to hit\" data-rollaction=\"Dagger\">+5</span> to hit, reach 5 ft. or range 20/60 ft., one target. <em>Hit:</em> 5 <span data-dicenotation=\"1d4+3\" data-rolltype=\"damage\" data-rollaction=\"Dagger\" data-rolldamagetype=\"piercing\">(1d4 + 3)</span> piercing damage.</p>",
+            "reactionsDescription": "<p><em><strong>Parry.</strong></em> The captain adds 2 to its AC against one melee attack that would hit it. To do so, the captain must see the attacker and be wielding a melee weapon.</p>",
+            "legendaryActionsDescription": "",
+            "mythicActionsDescription": "",
+            "bonusActionsDescription": "",
+            "characteristicsDescription": "<p>It takes a strong personality, ruthless cunning, and a silver tongue to keep a gang of bandits in line. The bandit captain has these qualities in spades. In addition to managing a crew of selfish malcontents, the pirate captain is a variation of the bandit captain, with a ship to protect and command. To keep the crew in line, the captain must mete out rewards and punishment on a regular basis. More than treasure, a bandit captain or pirate captain craves infamy. A prisoner who appeals to the captain's vanity or ego is more likely to be treated fairly than a prisoner who does not or claims not to know anything of the captain's colorful reputation.</p>",
+            "lairDescription": "",
+            "languageDescription": " any two languages  ",
+            "languageNote": " Any two languages  ",
+            "hideCr": false,
+            "isLegacy": true
+        }
+    ]
+}

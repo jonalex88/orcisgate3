@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Original dark palette — deliberately not BG3's actual colors, just the same
+     "high-contrast, parchment-on-obsidian" register that reads well at a glance. */
+  --color-obsidian-950: #0b0d12;
+  --color-obsidian-900: #14171f;
+  --color-obsidian-800: #1c202b;
+  --color-obsidian-700: #262b39;
+  --color-ember-500: #c9773f;
+  --color-ember-400: #dd934f;
+  --color-arcane-500: #6a7fd6;
+  --color-parchment-100: #ece6d8;
+  --color-parchment-300: #c7bfa9;
+  --color-hp-500: #a13d3d;
+  --color-hp-400: #c85050;
+}
+
+body {
+  background-color: var(--color-obsidian-950);
+  color: var(--color-parchment-100);
+}

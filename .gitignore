@@ -1,0 +1,22 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.local
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+.vite/
+.turbo/
+apps/server/data/
+
+# Raw D&D Beyond exports may contain your account's userId/username — never commit unsanitized.
+# The sanitized copies used for tests live under packages/domain/src/__fixtures__/.
+dndbeyond-json-sample.md
+encounter-roles.md
+encounter-stats.md
+complex-second-phase.md
+*.dndbeyond-raw.json
+

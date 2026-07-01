@@ -1,0 +1,28 @@
+{
+  "name": "orcisgate",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A BG3-inspired combat dashboard for D&D Beyond characters",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @orcisgate/web",
+    "dev:server": "npm run dev -w @orcisgate/server",
+    "build": "npm run build -w @orcisgate/domain && npm run build -w @orcisgate/server && npm run build -w @orcisgate/web",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  }
+}
