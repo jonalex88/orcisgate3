@@ -9,8 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:web": "npm run dev -w @orcisgate/web",
-    "dev:server": "npm run dev -w @orcisgate/server",
+    "dev:web": "npm run build -w @orcisgate/domain && npm run dev -w @orcisgate/web",
+    "dev:server": "npm run build -w @orcisgate/domain && npm run dev -w @orcisgate/server",
     "build": "npm run build -w @orcisgate/domain && npm run build -w @orcisgate/server && npm run build -w @orcisgate/web",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",

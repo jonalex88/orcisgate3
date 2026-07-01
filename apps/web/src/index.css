@@ -2,14 +2,20 @@
 
 @theme {
   /* Original dark palette — deliberately not BG3's actual colors, just the same
-     "high-contrast, parchment-on-obsidian" register that reads well at a glance. */
+     "high-contrast, parchment-on-obsidian" register that reads well at a glance.
+     Accent is a subdued moss/verdigris green rather than a warm ember tone. */
   --color-obsidian-950: #0b0d12;
   --color-obsidian-900: #14171f;
   --color-obsidian-800: #1c202b;
   --color-obsidian-700: #262b39;
-  --color-ember-500: #c9773f;
-  --color-ember-400: #dd934f;
+  --color-obsidian-600: #333a4c;
+  --color-moss-600: #2f5b42;
+  --color-moss-500: #4f8f6b;
+  --color-moss-400: #6fae87;
+  --color-moss-300: #9ccbb0;
   --color-arcane-500: #6a7fd6;
+  --color-arcane-400: #8b9de3;
+  --color-violet-500: #9b6fc9;
   --color-parchment-100: #ece6d8;
   --color-parchment-300: #c7bfa9;
   --color-hp-500: #a13d3d;

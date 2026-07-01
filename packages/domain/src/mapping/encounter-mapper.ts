@@ -32,6 +32,7 @@ export function mapEncounter(rawPayload: unknown): Encounter {
       name: p.name,
       classByLine: p.classByLine ?? '',
       avatarUrl: p.avatarUrl ?? null,
+      initiative: null,
     })),
   }
 }

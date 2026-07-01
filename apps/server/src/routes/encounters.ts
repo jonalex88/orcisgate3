@@ -1,31 +1,21 @@
-import { mapEncounter, referencedMonsterTemplateIds } from '@orcisgate/domain'
 import { Router } from 'express'
 import type { Db } from '../db.js'
+import { resolveEncounterImport } from '../encounter-import.js'
 
 /**
- * Importing an encounter resolves every referenced monster id against the persistent library
- * (db.ts) rather than requiring the DM to re-paste stat blocks that were already imported once,
- * anywhere. Anything not found comes back as `missingMonsterIds` — the encounter still loads with
- * whatever it *could* resolve rather than failing the whole import over one unknown monster.
+ * Standalone preview/import endpoint (not tied to a game) — mostly superseded by
+ * `/api/games/:key/encounters` once a DM is actually running a session, but useful on its own for
+ * checking what an encounter paste resolves to before joining/creating a game.
  */
 export function createEncountersRouter(db: Db): Router {
   const router = Router()
 
   router.post('/', (req, res) => {
-    let encounter
     try {
-      encounter = mapEncounter(req.body)
+      res.json(resolveEncounterImport(db, req.body))
     } catch (error) {
       res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid encounter JSON' })
-      return
     }
-
-    const referencedIds = referencedMonsterTemplateIds(encounter)
-    const monsters = db.getMonsterTemplates(referencedIds)
-    const foundIds = new Set(monsters.map((m) => m.id))
-    const missingMonsterIds = referencedIds.filter((id) => !foundIds.has(id))
-
-    res.json({ encounter, monsters, missingMonsterIds })
   })
 
   return router

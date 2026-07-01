@@ -1,34 +1,25 @@
 import type { Character } from '@orcisgate/domain'
 import type { ReactNode } from 'react'
 
-interface CharacterDebugViewProps {
+interface CharacterSummaryProps {
   character: Character
-  onDisconnect: () => void
 }
 
 /**
- * Deliberately plain — proves the data layer end-to-end (live fetch -> mapper -> UI) before the
- * real BG3-inspired action-economy layout gets built in the next phase.
+ * The player's action-economy dashboard, embedded in the shared table layout. Still fairly plain
+ * list-based sections for spells/features/resources — the BG3-card treatment is fully applied to
+ * the action hotbar (the actually-clickable combat surface); a deeper visual pass on these
+ * secondary reference sections is a natural next iteration, not attempted in this pass.
  */
-export function CharacterDebugView({ character, onDisconnect }: CharacterDebugViewProps) {
+export function CharacterSummary({ character }: CharacterSummaryProps) {
   return (
-    <main className="min-h-screen bg-obsidian-950 p-8 text-parchment-100">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold">{character.name}</h1>
-          <p className="text-parchment-300">
-            {character.classes.map((c) => `${c.name}${c.subclass ? ` (${c.subclass})` : ''} ${c.level}`).join(' / ')}
-            {' · Level '}
-            {character.level}
-          </p>
-        </div>
-        <button
-          className="rounded border border-obsidian-700 px-3 py-1.5 text-sm hover:bg-obsidian-800"
-          onClick={onDisconnect}
-        >
-          Disconnect
-        </button>
-      </div>
+    <div className="text-parchment-100">
+      <h1 className="text-3xl font-semibold">{character.name}</h1>
+      <p className="text-parchment-300">
+        {character.classes.map((c) => `${c.name}${c.subclass ? ` (${c.subclass})` : ''} ${c.level}`).join(' / ')}
+        {' · Level '}
+        {character.level}
+      </p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat label="HP" value={String(character.maxHp)} />
@@ -36,15 +27,6 @@ export function CharacterDebugView({ character, onDisconnect }: CharacterDebugVi
         <Stat label="Speed" value={`${character.speed} ft`} />
         <Stat label="Proficiency" value={`+${character.proficiencyBonus}`} />
       </div>
-
-      <Section title={`Actions (${character.actions.length})`}>
-        {character.actions.map((a) => (
-          <li key={a.id}>
-            <span className="text-parchment-100">{a.name}</span>{' '}
-            <span className="text-parchment-300">— {a.economyType}</span>
-          </li>
-        ))}
-      </Section>
 
       <Section title={`Spells (${character.spells.length})`}>
         {character.spells.map((s) => (
@@ -58,7 +40,7 @@ export function CharacterDebugView({ character, onDisconnect }: CharacterDebugVi
         ))}
       </Section>
 
-      <Section title={`Spell Slots`}>
+      <Section title="Spell Slots">
         {character.spellSlots.map((slot) => (
           <li key={slot.level}>
             Level {slot.level}: {slot.current}/{slot.max}
@@ -66,7 +48,7 @@ export function CharacterDebugView({ character, onDisconnect }: CharacterDebugVi
         ))}
       </Section>
 
-      <Section title={`Resources`}>
+      <Section title="Resources">
         {character.resources.map((r) => (
           <li key={r.id}>
             {r.name}: {r.current}/{r.max} ({r.resetsOn})
@@ -82,7 +64,7 @@ export function CharacterDebugView({ character, onDisconnect }: CharacterDebugVi
           </li>
         ))}
       </Section>
-    </main>
+    </div>
   )
 }
 
@@ -98,7 +80,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-6">
-      <h2 className="text-lg font-semibold text-ember-400">{title}</h2>
+      <h2 className="text-lg font-semibold text-moss-400">{title}</h2>
       <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto rounded-lg border border-obsidian-700 bg-obsidian-800 p-3 text-sm">
         {children}
       </ul>

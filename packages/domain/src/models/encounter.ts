@@ -25,6 +25,8 @@ export interface EncounterPlayerRef {
   name: string
   classByLine: string
   avatarUrl: string | null
+  /** Set by the room's "roll initiative" action; null until then. */
+  initiative: number | null
 }
 
 export interface Encounter {

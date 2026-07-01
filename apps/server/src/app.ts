@@ -3,6 +3,7 @@ import express, { type Express } from 'express'
 import type { Db } from './db.js'
 import { createCharactersRouter } from './routes/characters.js'
 import { createEncountersRouter } from './routes/encounters.js'
+import { createGamesRouter } from './routes/games.js'
 import { createMonstersRouter } from './routes/monsters.js'
 
 export function createApp(db: Db): Express {
@@ -19,6 +20,7 @@ export function createApp(db: Db): Express {
   app.use('/api/characters', createCharactersRouter(db))
   app.use('/api/monsters', createMonstersRouter(db))
   app.use('/api/encounters', createEncountersRouter(db))
+  app.use('/api/games', createGamesRouter(db))
 
   return app
 }
