@@ -28,7 +28,9 @@ export function JoinGameScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-obsidian-950 p-8">
       <div className="w-full max-w-md rounded-lg border border-obsidian-700 bg-obsidian-800 p-6">
-        <h1 className="text-2xl font-semibold text-parchment-100">OrcisGate</h1>
+        <h1>
+          <img src="/logo.png" alt="OrcisGate" className="h-12 w-auto" />
+        </h1>
 
         {step === 'key' && (
           <form onSubmit={handleKeySubmit}>

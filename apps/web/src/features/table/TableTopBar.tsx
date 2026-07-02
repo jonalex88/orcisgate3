@@ -9,7 +9,9 @@ export function TableTopBar({ gameKey, roleLabel, roundNum, connected }: TableTo
   return (
     <header className="flex items-center justify-between border-b border-obsidian-700 bg-obsidian-900 px-6 py-3">
       <div>
-        <h1 className="text-xl font-semibold tracking-wide text-parchment-100">OrcisGate</h1>
+        <h1>
+          <img src="/logo.png" alt="OrcisGate" className="h-6 w-auto" />
+        </h1>
         <p className="text-xs text-parchment-300">
           Game <span className="text-moss-400">{gameKey}</span> · {roleLabel}
         </p>
