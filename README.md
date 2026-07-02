@@ -121,7 +121,20 @@ Requires:
   different ports — it's unused once both are served from the same origin in production.
 
 A `railway.json` at the repo root configures the build/start commands and health check
-(`/api/health`) for Railway specifically. Note the build command is `npm install`, not
-`npm ci` — Railway's build cache mounts a persistent `node_modules/.cache` directory, and `npm
-ci`'s full wipe-and-reinstall tries to `rmdir` that mounted path and fails with `EBUSY`.
-`npm install` doesn't do the full wipe, so it doesn't hit the conflict.
+(`/api/health`) for Railway specifically. Two deliberate deviations from the obvious commands,
+both worth knowing about if the build ever needs troubleshooting:
+
+- **`npm install`, not `npm ci`.** Railway's build mounts a persistent `node_modules/.cache`
+  directory as a build cache. `npm ci` does a full wipe-and-reinstall of `node_modules`, which
+  tries to `rmdir` that mounted path and fails with `EBUSY`. `npm install` doesn't do the full
+  wipe, so it doesn't hit the conflict.
+- **`rm -f package-lock.json` before installing.** `package-lock.json` in this repo was generated
+  on Windows, so native-binary optional dependencies (`lightningcss`, `esbuild`, `@rollup/rollup-*`)
+  only have a fully-resolved lockfile entry for the Windows variant — the Linux ones Railway's
+  build needs aren't reliably fetched from a lockfile generated on a different OS (a
+  long-standing, widely-reported npm behavior with cross-platform optional dependencies, not
+  specific to this project). Deleting the lockfile before install forces npm to resolve
+  dependencies fresh, directly on Railway's own Linux container, picking up the correct native
+  binaries. The tradeoff is losing exact version-pinning on deploy — acceptable here, but worth
+  knowing if a transitive dependency update ever causes an unexpected deploy-time difference from
+  local dev.
