@@ -121,4 +121,7 @@ Requires:
   different ports — it's unused once both are served from the same origin in production.
 
 A `railway.json` at the repo root configures the build/start commands and health check
-(`/api/health`) for Railway specifically.
+(`/api/health`) for Railway specifically. Note the build command is `npm install`, not
+`npm ci` — Railway's build cache mounts a persistent `node_modules/.cache` directory, and `npm
+ci`'s full wipe-and-reinstall tries to `rmdir` that mounted path and fails with `EBUSY`.
+`npm install` doesn't do the full wipe, so it doesn't hit the conflict.
