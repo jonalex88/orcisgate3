@@ -92,7 +92,11 @@ export function PlayerTableView() {
         <RollLogPane rollLog={state.rollLog} onRoll={(label, dice) => roll(label, dice)} />
       </div>
 
-      <ActionHotbar actions={character.actions} onRoll={(label) => roll(label, [{ sides: 20, count: 1 }])} />
+      <ActionHotbar
+        actions={character.actions}
+        spells={character.spells}
+        onRoll={(label) => roll(label, [{ sides: 20, count: 1 }])}
+      />
     </div>
   )
 }
