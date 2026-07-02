@@ -128,13 +128,18 @@ both worth knowing about if the build ever needs troubleshooting:
   directory as a build cache. `npm ci` does a full wipe-and-reinstall of `node_modules`, which
   tries to `rmdir` that mounted path and fails with `EBUSY`. `npm install` doesn't do the full
   wipe, so it doesn't hit the conflict.
-- **`rm -f package-lock.json` before installing.** `package-lock.json` in this repo was generated
-  on Windows, so native-binary optional dependencies (`lightningcss`, `esbuild`, `@rollup/rollup-*`)
-  only have a fully-resolved lockfile entry for the Windows variant — the Linux ones Railway's
-  build needs aren't reliably fetched from a lockfile generated on a different OS (a
-  long-standing, widely-reported npm behavior with cross-platform optional dependencies, not
-  specific to this project). Deleting the lockfile before install forces npm to resolve
-  dependencies fresh, directly on Railway's own Linux container, picking up the correct native
-  binaries. The tradeoff is losing exact version-pinning on deploy — acceptable here, but worth
-  knowing if a transitive dependency update ever causes an unexpected deploy-time difference from
-  local dev.
+- **Clearing `node_modules` (except `.cache`) and `package-lock.json` before installing.**
+  `package-lock.json` in this repo was generated on Windows, so native-binary optional
+  dependencies (`lightningcss`, `esbuild`, `@rollup/rollup-*`) only have a fully-resolved lockfile
+  entry for the Windows variant — the Linux ones Railway's build needs aren't reliably fetched
+  from a lockfile generated on a different OS (a long-standing, widely-reported npm behavior with
+  cross-platform optional dependencies, not specific to this project). Railway also persists
+  `node_modules` itself across builds for speed, so merely deleting the lockfile isn't enough —
+  npm sees the already-installed (wrong-platform) packages still satisfy `package.json` and skips
+  reinstalling them entirely. The build command clears everything under `node_modules` *except*
+  the `.cache` subdirectory (that one's an actively-mounted build cache — trying to remove the
+  mount point itself, e.g. via `npm ci`'s full wipe, is exactly what caused the `EBUSY` error
+  above) and deletes the lockfile, forcing npm to resolve and fetch everything fresh, directly on
+  Railway's own Linux container. The tradeoff is losing exact version-pinning on deploy —
+  acceptable here, but worth knowing if a transitive dependency update ever causes an unexpected
+  deploy-time difference from local dev.
