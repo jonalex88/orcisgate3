@@ -17,28 +17,40 @@ function renderAtRoot() {
 }
 
 describe('JoinGameScreen', () => {
-  it('disables submission until a game key is entered', () => {
+  it('disables continuing until a game key is entered', () => {
     renderAtRoot()
-    expect(screen.getByRole('button', { name: 'Sit at the table' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
   })
 
-  it('routes a player to the connect flow by default', async () => {
+  it('asks whether you are the Dungeon Master or an underling after the key', async () => {
     const user = userEvent.setup()
     renderAtRoot()
 
     await user.type(screen.getByLabelText(/magic game key/i), 'bloodwar-tuesdays')
-    await user.click(screen.getByRole('button', { name: 'Sit at the table' }))
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+
+    expect(screen.getByRole('button', { name: 'I am the Dungeon Master' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'I am an underling' })).toBeInTheDocument()
+  })
+
+  it('routes an underling to the connect flow', async () => {
+    const user = userEvent.setup()
+    renderAtRoot()
+
+    await user.type(screen.getByLabelText(/magic game key/i), 'bloodwar-tuesdays')
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    await user.click(screen.getByRole('button', { name: 'I am an underling' }))
 
     expect(await screen.findByText('CONNECT VIEW')).toBeInTheDocument()
   })
 
-  it('routes a checked "I am the Dungeon Master" straight to the DM view', async () => {
+  it('routes the Dungeon Master straight to the DM view, no character needed', async () => {
     const user = userEvent.setup()
     renderAtRoot()
 
     await user.type(screen.getByLabelText(/magic game key/i), 'bloodwar-tuesdays')
-    await user.click(screen.getByLabelText('I am the Dungeon Master'))
-    await user.click(screen.getByRole('button', { name: 'Sit at the table' }))
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+    await user.click(screen.getByRole('button', { name: 'I am the Dungeon Master' }))
 
     expect(await screen.findByText('DM VIEW')).toBeInTheDocument()
   })

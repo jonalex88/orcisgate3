@@ -1,9 +1,11 @@
-import { LiveProxyDataSource, mapCharacter, type Character } from '@orcisgate/domain'
+import { LiveProxyDataSource, mapCharacter, parseCharacterId, type Character } from '@orcisgate/domain'
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, useParams, useSearchParams } from 'react-router'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { useGameEvents, type PlayerConnectionInfo } from '../../hooks/useGameEvents.js'
 import { useRollSubmitter } from '../../hooks/useRollSubmitter.js'
 import { classByLine } from '../../lib/character-display.js'
+import { setLastCharacterId } from '../../lib/cookies.js'
+import { ConnectScreen } from '../connect/ConnectScreen.js'
 import { ActionHotbar } from './ActionHotbar.js'
 import { CharacterSummary } from './CharacterSummary.js'
 import { MoodImageDisplay } from './MoodImageDisplay.js'
@@ -14,6 +16,7 @@ const dataSource = new LiveProxyDataSource()
 
 export function PlayerTableView() {
   const { gameKey = '' } = useParams<{ gameKey: string }>()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const characterId = searchParams.get('characterId') ?? ''
 
@@ -48,7 +51,18 @@ export function PlayerTableView() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-obsidian-950 p-8 text-hp-400">{error}</div>
+      <ConnectScreen
+        initialValue={characterId}
+        error={error}
+        isLoading={false}
+        onConnect={(input) => {
+          const newCharacterId = parseCharacterId(input)
+          if (!newCharacterId) return
+          setLastCharacterId(newCharacterId)
+          setError(null)
+          navigate(`/game/${encodeURIComponent(gameKey)}/player?characterId=${encodeURIComponent(newCharacterId)}`)
+        }}
+      />
     )
   }
 
@@ -69,9 +83,10 @@ export function PlayerTableView() {
         connected={state.connected}
       />
 
+      <MoodImageDisplay url={state.moodImageUrl} compact />
+
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6">
-          <MoodImageDisplay url={state.moodImageUrl} />
           <CharacterSummary character={character} />
         </div>
         <RollLogPane rollLog={state.rollLog} onRoll={(label, dice) => roll(label, dice)} />

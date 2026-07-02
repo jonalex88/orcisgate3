@@ -1,3 +1,4 @@
+import { parseCharacterId } from '@orcisgate/domain'
 import { useState } from 'react'
 
 interface ConnectScreenProps {
@@ -9,6 +10,7 @@ interface ConnectScreenProps {
 
 export function ConnectScreen({ initialValue, onConnect, isLoading, error }: ConnectScreenProps) {
   const [value, setValue] = useState(initialValue)
+  const isValid = parseCharacterId(value) !== null
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-obsidian-950 p-8">
@@ -24,6 +26,13 @@ export function ConnectScreen({ initialValue, onConnect, isLoading, error }: Con
           Paste your D&D Beyond character URL or id. This only works for public characters right
           now — private-character connect is a later phase.
         </p>
+
+        <div className="mt-4 rounded border border-obsidian-600 bg-obsidian-900 p-3 text-xs text-parchment-300">
+          <strong className="text-moss-400">Make your character public:</strong> on your character&apos;s
+          D&D Beyond page, click <strong>Edit Character</strong>, open the <strong>Home</strong> tab, scroll
+          to the bottom, and check <strong>Public</strong>.
+        </div>
+
         <input
           className="mt-4 w-full rounded border border-obsidian-700 bg-obsidian-900 px-3 py-2 text-parchment-100 outline-none focus:border-ember-500"
           placeholder="https://www.dndbeyond.com/characters/167672386"
@@ -35,7 +44,7 @@ export function ConnectScreen({ initialValue, onConnect, isLoading, error }: Con
         <button
           type="submit"
           className="mt-4 w-full rounded bg-ember-500 px-4 py-2 font-medium text-obsidian-950 hover:bg-ember-400 disabled:opacity-50"
-          disabled={isLoading || value.trim().length === 0}
+          disabled={isLoading || !isValid}
         >
           {isLoading ? 'Connecting…' : 'Connect'}
         </button>
