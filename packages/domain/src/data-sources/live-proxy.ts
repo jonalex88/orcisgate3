@@ -18,7 +18,8 @@ export class LiveProxyDataSource implements CharacterDataSource {
   constructor(private readonly baseUrl: string = '') {}
 
   async fetchCharacter(ref: CharacterRef): Promise<RawCharacterPayload> {
-    const response = await fetch(`${this.baseUrl}/api/characters/${ref.characterId}`)
+    const query = ref.forceRefresh ? '?refresh=true' : ''
+    const response = await fetch(`${this.baseUrl}/api/characters/${ref.characterId}${query}`)
 
     if (!response.ok) {
       const body = await response.json().catch(() => null)

@@ -1,5 +1,7 @@
 export interface CharacterRef {
   characterId: string
+  /** Bypasses the server's response cache — used by "re-import my character" to pick up sheet edits immediately. */
+  forceRefresh?: boolean
 }
 
 export interface RawCharacterPayload {

@@ -40,6 +40,14 @@ describe('LiveProxyDataSource', () => {
     expect(fetch).toHaveBeenCalledWith('http://localhost:3001/api/characters/167672386')
   })
 
+  it('appends ?refresh=true when forceRefresh is requested', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: {} }) }))
+
+    await new LiveProxyDataSource().fetchCharacter({ characterId: '167672386', forceRefresh: true })
+
+    expect(fetch).toHaveBeenCalledWith('/api/characters/167672386?refresh=true')
+  })
+
   it('is exported so callers can check error instances', () => {
     expect(new LiveProxyFetchError('x', 500)).toBeInstanceOf(Error)
   })

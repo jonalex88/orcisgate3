@@ -45,6 +45,19 @@ describe('GET /api/characters/:id', () => {
     expect(fetchCharacterFromDdb).toHaveBeenCalledTimes(1)
   })
 
+  it('?refresh=true bypasses the cache and re-fetches from D&D Beyond', async () => {
+    fetchCharacterFromDdb.mockResolvedValue({ data: { id: 167672386, name: 'Nathaniel Twinty' } })
+    const app = createApp(db)
+
+    await request(app).get('/api/characters/167672386')
+    fetchCharacterFromDdb.mockResolvedValue({ data: { id: 167672386, name: 'Nathaniel Twinty II' } })
+    const res = await request(app).get('/api/characters/167672386?refresh=true')
+
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ data: { id: 167672386, name: 'Nathaniel Twinty II' } })
+    expect(fetchCharacterFromDdb).toHaveBeenCalledTimes(2)
+  })
+
   it('returns 404 when the character does not exist', async () => {
     fetchCharacterFromDdb.mockRejectedValue(new CharacterNotFoundError('not found'))
     const res = await request(createApp(db)).get('/api/characters/999999999')

@@ -9,6 +9,7 @@ import { ConnectScreen } from '../connect/ConnectScreen.js'
 import { ActionHotbar } from './ActionHotbar.js'
 import { CharacterSummary } from './CharacterSummary.js'
 import { MoodImageDisplay } from './MoodImageDisplay.js'
+import { PlayerSettingsPanel } from './PlayerSettingsPanel.js'
 import { RollLogPane } from './RollLogPane.js'
 import { TableTopBar } from './TableTopBar.js'
 
@@ -22,6 +23,7 @@ export function PlayerTableView() {
 
   const [character, setCharacter] = useState<Character | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Connecting announces "this player is at the table" (see useGameEvents) — held back until the
   // character has actually loaded so the roster shows a real name, not a placeholder.
@@ -46,6 +48,16 @@ export function PlayerTableView() {
       .then((raw) => setCharacter(mapCharacter(raw.data)))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load character'))
   }, [characterId])
+
+  function handleCharacterUpdated(updated: Character, updatedCharacterId: string) {
+    setCharacter(updated)
+    setError(null)
+    if (updatedCharacterId !== characterId) {
+      navigate(`/game/${encodeURIComponent(gameKey)}/player?characterId=${encodeURIComponent(updatedCharacterId)}`, {
+        replace: true,
+      })
+    }
+  }
 
   if (!characterId) return <Navigate to={`/game/${encodeURIComponent(gameKey)}/connect`} replace />
 
@@ -92,11 +104,29 @@ export function PlayerTableView() {
         <RollLogPane rollLog={state.rollLog} onRoll={(label, dice) => roll(label, dice)} />
       </div>
 
+      <div className="flex justify-end border-t border-obsidian-700 bg-obsidian-900 px-4 py-2">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="text-sm text-parchment-300 hover:text-moss-400"
+        >
+          Player Settings
+        </button>
+      </div>
+
       <ActionHotbar
         actions={character.actions}
         spells={character.spells}
         onRoll={(label) => roll(label, [{ sides: 20, count: 1 }])}
       />
+
+      {settingsOpen && (
+        <PlayerSettingsPanel
+          characterId={characterId}
+          onCharacterUpdated={handleCharacterUpdated}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   )
 }

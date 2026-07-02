@@ -16,7 +16,8 @@ export function createCharactersRouter(db: Db): Router {
       return
     }
 
-    const cached = db.getCachedCharacter(id, CACHE_TTL_MS)
+    const forceRefresh = req.query.refresh === 'true'
+    const cached = forceRefresh ? null : db.getCachedCharacter(id, CACHE_TTL_MS)
     if (cached) {
       res.json(cached)
       return
