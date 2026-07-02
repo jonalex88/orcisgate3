@@ -1,13 +1,14 @@
 import { isPassiveFeature } from '../classification/feature-classifier.js'
 import type { ActionItem } from '../models/action.js'
-import type { Character, ClassLevel } from '../models/character.js'
+import type { AbilityScores, Character, ClassLevel } from '../models/character.js'
 import type { Feature } from '../models/feature.js'
 import type { ResourcePool, RestType, SpellSlotPool } from '../models/resource.js'
 import type { Spell, SpellSchool } from '../models/spell.js'
 import { economyFromActivationType } from './activation.js'
-import type { RawAction, RawCharacterData, RawClassFeature } from './ddb-schema.js'
+import type { RawAction, RawCharacterData, RawClassFeature, RawInventoryItem } from './ddb-schema.js'
 import { rawCharacterResponseSchema } from './ddb-schema.js'
 import {
+  abilityModifier,
   deriveAbilityScores,
   deriveArmorClass,
   deriveCurrentHp,
@@ -72,6 +73,82 @@ function mapActions(data: RawCharacterData): ActionItem[] {
       }
     }),
   )
+}
+
+/**
+ * Which ability drives a weapon's attack/damage roll. Finesse lets the wielder use whichever of
+ * Strength/Dexterity is higher (real 5e rule); a ranged weapon always uses Dexterity; anything
+ * else defaults to Strength. Verified against one real equipped weapon (a non-Finesse melee Mace,
+ * which correctly resolves to Strength) — the Finesse/ranged branches follow the same rule but
+ * haven't been exercised against a real Finesse or ranged weapon yet.
+ */
+function abilityModifierForWeapon(def: RawInventoryItem['definition'], abilityScores: AbilityScores): number {
+  const properties = (def.properties ?? []).map((p) => p.name.toLowerCase())
+  const strMod = abilityModifier(abilityScores.strength)
+  const dexMod = abilityModifier(abilityScores.dexterity)
+  if (properties.includes('finesse')) return Math.max(strMod, dexMod)
+  if (def.attackType === 2) return dexMod
+  return strMod
+}
+
+/**
+ * Sums any flat attack/damage bonus a magic weapon grants via its own `grantedModifiers` (e.g. a
+ * +1 weapon). Unverified against a real magic weapon — the one real sample this was built against
+ * (`magic: false`) had an empty `grantedModifiers` array, so this is a reasonable-default
+ * extrapolation of the same "sum bonus-type modifiers" pattern already used for ability scores
+ * and AC in derive-stats.ts, not something cross-checked against a live +N weapon yet.
+ */
+function weaponMagicBonus(def: RawInventoryItem['definition']): number {
+  return (def.grantedModifiers ?? [])
+    .filter((m) => m.type === 'bonus')
+    .reduce((sum, m) => sum + (m.value ?? 0), 0)
+}
+
+function formatSignedModifier(value: number): string {
+  return value >= 0 ? `+${value}` : String(value)
+}
+
+/**
+ * Turns each equipped weapon into a rollable attack. Off-hand/two-weapon-fighting bonus-action
+ * attacks aren't modeled — every attack maps to the base Attack action's economy ('action') since
+ * distinguishing an off-hand weapon from D&D Beyond's inventory data alone isn't reliable; a known
+ * simplification, not silently guessed at.
+ */
+function mapWeaponAttacks(data: RawCharacterData, abilityScores: AbilityScores, proficiencyBonus: number): ActionItem[] {
+  return data.inventory
+    .filter((item) => item.equipped && item.definition.filterType === 'Weapon')
+    .map((item): ActionItem => {
+      const def = item.definition
+      const mod = abilityModifierForWeapon(def, abilityScores)
+      const magicBonus = weaponMagicBonus(def)
+      const toHit = proficiencyBonus + mod + magicBonus
+
+      const damageDice = def.damage?.diceString ?? (def.damage ? `${def.damage.diceCount ?? 1}d${def.damage.diceValue ?? 4}` : null)
+      const damageMod = mod + magicBonus
+      const damageType = def.damageType?.toLowerCase() ?? ''
+      const damageText = damageDice
+        ? `${damageDice}${damageMod !== 0 ? formatSignedModifier(damageMod) : ''} ${damageType}`.trim()
+        : null
+
+      const isRanged = def.attackType === 2
+      const rangeText = isRanged
+        ? `range ${def.range ?? '?'}/${def.longRange ?? '?'} ft.`
+        : `reach ${def.range ?? 5} ft.`
+      const attackKind = isRanged ? 'Ranged Weapon Attack' : 'Melee Weapon Attack'
+
+      const description = `${attackKind}: ${formatSignedModifier(toHit)} to hit, ${rangeText}, one target.${damageText ? ` Hit: ${damageText} damage.` : ''}`
+      const tags = [`${formatSignedModifier(toHit)} to hit`, damageText].filter((tag): tag is string => tag != null)
+
+      return {
+        id: `weapon-${item.id}`,
+        name: def.name,
+        description,
+        economyType: 'action',
+        sourceKind: 'weapon',
+        isManualOverride: false,
+        tags,
+      }
+    })
 }
 
 function mapSpells(data: RawCharacterData): Spell[] {
@@ -216,6 +293,7 @@ export function mapCharacter(rawPayload: unknown): Character {
   const level = totalCharacterLevel(data)
   const maxHp = deriveMaxHp(data, abilityScores)
   const classes = mapClasses(data)
+  const proficiencyBonus = proficiencyBonusForLevel(level)
 
   return {
     id: String(data.id),
@@ -224,11 +302,11 @@ export function mapCharacter(rawPayload: unknown): Character {
     classes,
     level,
     abilityScores,
-    proficiencyBonus: proficiencyBonusForLevel(level),
+    proficiencyBonus,
     armorClass: deriveArmorClass(data, abilityScores),
     maxHp,
     speed: deriveSpeed(data),
-    actions: mapActions(data),
+    actions: [...mapActions(data), ...mapWeaponAttacks(data, abilityScores, proficiencyBonus)],
     spells: mapSpells(data),
     spellSlots: mapSpellSlots(data, classes),
     features: mapFeatures(data),

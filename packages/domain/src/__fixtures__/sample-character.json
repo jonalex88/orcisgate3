@@ -795,7 +795,41 @@
       "showHelpText": false
     },
     "lifestyle": null,
-    "inventory": [],
+    "inventory": [
+      {
+        "id": 1047508192,
+        "entityTypeId": 1439493548,
+        "definition": {
+          "id": 11,
+          "name": "Mace",
+          "filterType": "Weapon",
+          "magic": false,
+          "damage": {
+            "diceCount": 1,
+            "diceValue": 6,
+            "diceMultiplier": null,
+            "fixedValue": null,
+            "diceString": "1d6"
+          },
+          "damageType": "Bludgeoning",
+          "properties": [
+            {
+              "id": 22,
+              "name": "Sap",
+              "description": "<p>If you hit a creature with this weapon, that creature has Disadvantage on its next attack roll before the start of your next turn.</p>",
+              "notes": null
+            }
+          ],
+          "attackType": 1,
+          "range": 5,
+          "longRange": 5,
+          "isMonkWeapon": true,
+          "grantedModifiers": []
+        },
+        "equipped": true,
+        "quantity": 1
+      }
+    ],
     "currencies": {
       "cp": 0,
       "sp": 0,

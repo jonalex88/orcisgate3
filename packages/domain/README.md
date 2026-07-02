@@ -49,8 +49,18 @@ directly against the table's well-known values (e.g. Warlock 11 → three 5th-le
 - **AC** only handles the unarmored case (`10 + Dex modifier` + flat armor-class bonus modifiers).
   Equipped-armor math (base-by-armor-type, per-type Dex caps, shields) isn't implemented — the
   character this was built against had no equipped armor to verify it against.
-- **Inventory mapping isn't implemented.** The fixture character had an empty `inventory` array,
-  so there was nothing real to build/verify `InventoryItem` mapping against yet.
+- **Inventory mapping (the `InventoryItem` list itself, e.g. for a future inventory screen) isn't
+  implemented** — only equipped weapons are read from `inventory`, and only to generate an Attack
+  action (see below). Non-weapon items (potions, gear, currency) aren't modeled yet.
+- **Equipped weapons become rollable Attack actions**, verified against one real weapon pulled live
+  from D&D Beyond's public character endpoint (a non-Finesse melee Mace — to-hit/damage/ability
+  selection all confirmed correct against it). Two things are extrapolated from well-documented
+  convention rather than verified against a real sample: a Finesse or ranged weapon's
+  ability-selection rule (max(Str,Dex) for Finesse, Dex for ranged — the 5e rule itself isn't in
+  question, just whether DDB's `attackType`/`properties[].name` fields behave as expected for those
+  cases), and a magic weapon's `grantedModifiers` attack/damage bonus (the one real sample was
+  non-magic with an empty `grantedModifiers` array). Off-hand/two-weapon-fighting bonus-action
+  attacks aren't modeled — every weapon attack maps to the base Attack action's economy.
 
 ## Monsters and encounters
 

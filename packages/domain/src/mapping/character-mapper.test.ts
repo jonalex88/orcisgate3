@@ -33,6 +33,16 @@ describe('mapCharacter', () => {
     expect(channelDivinity?.tags).toContain('2/long rest')
   })
 
+  it('maps an equipped weapon into a rollable Attack action (STR 12 + proficiency 2 = +3 to hit)', () => {
+    const mace = character.actions.find((a) => a.name === 'Mace')
+    expect(mace).toMatchObject({
+      economyType: 'action',
+      sourceKind: 'weapon',
+      description: 'Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 1d6+1 bludgeoning damage.',
+      tags: ['+3 to hit', '1d6+1 bludgeoning'],
+    })
+  })
+
   it('maps spells with level, concentration, and casting-time-derived economy type', () => {
     const eldritchBlast = character.spells.find((s) => s.name === 'Eldritch Blast')
     expect(eldritchBlast).toMatchObject({ level: 0, castingEconomy: 'action', concentration: false })

@@ -156,6 +156,46 @@ const rawFeatSchema = z.object({
   }),
 })
 
+/**
+ * Weapon/inventory shape, verified against one real equipped weapon (a Mace) pulled live from
+ * D&D Beyond's public character endpoint — `damage.diceString`, `attackType`, `properties[].name`,
+ * and `filterType: "Weapon"` all confirmed directly. Ranged weapons (attackType 2), Finesse/
+ * Versatile properties, and a magic weapon's `grantedModifiers` bonus are handled per the same
+ * well-documented convention (community tools like ddb-importer) but NOT yet verified against a
+ * real sample of each — see weapon-attack mapping in character-mapper.ts for how each is used.
+ */
+const rawWeaponPropertySchema = z.object({ name: z.string() })
+
+const rawWeaponDamageSchema = z
+  .object({
+    diceCount: z.number().nullable().optional(),
+    diceValue: z.number().nullable().optional(),
+    fixedValue: z.number().nullable().optional(),
+    diceString: z.string().nullable().optional(),
+  })
+  .nullable()
+  .optional()
+
+const rawInventoryDefinitionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  filterType: z.string().nullable().optional(),
+  attackType: z.number().nullable().optional(),
+  damage: rawWeaponDamageSchema,
+  damageType: z.string().nullable().optional(),
+  properties: nullableArray(rawWeaponPropertySchema),
+  range: z.number().nullable().optional(),
+  longRange: z.number().nullable().optional(),
+  magic: z.boolean().nullable().optional(),
+  grantedModifiers: nullableArray(rawModifierSchema),
+})
+
+const rawInventoryItemSchema = z.object({
+  id: z.number(),
+  equipped: z.boolean().nullable().optional(),
+  definition: rawInventoryDefinitionSchema,
+})
+
 const rawWeightSpeedsSchema = z
   .object({
     normal: z
@@ -192,6 +232,7 @@ export const rawCharacterDataSchema = z.object({
   actions: rawActionGroupSchema,
   options: rawOptionGroupSchema,
   modifiers: rawModifierGroupSchema,
+  inventory: nullableArray(rawInventoryItemSchema),
 })
 
 export const rawCharacterResponseSchema = z.object({
@@ -203,3 +244,4 @@ export type RawSpell = z.infer<typeof rawSpellSchema>
 export type RawAction = z.infer<typeof rawActionSchema>
 export type RawClassFeature = z.infer<typeof rawClassFeatureSchema>
 export type RawModifier = z.infer<typeof rawModifierSchema>
+export type RawInventoryItem = z.infer<typeof rawInventoryItemSchema>
