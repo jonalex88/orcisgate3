@@ -11,6 +11,9 @@ Thumbs.db
 .vite/
 .turbo/
 apps/server/data/
+# The default DB_PATH is CWD-relative — running the server from the repo root (e.g. `npm start`,
+# which is exactly what a one-service deploy does) creates this instead of apps/server/data/.
+/data/
 
 # Raw D&D Beyond exports may contain your account's userId/username — never commit unsanitized.
 # The sanitized copies used for tests live under packages/domain/src/__fixtures__/.

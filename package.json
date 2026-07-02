@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "A BG3-inspired combat dashboard for D&D Beyond characters",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -12,6 +15,7 @@
     "dev:web": "npm run build -w @orcisgate/domain && npm run dev -w @orcisgate/web",
     "dev:server": "npm run build -w @orcisgate/domain && npm run dev -w @orcisgate/server",
     "build": "npm run build -w @orcisgate/domain && npm run build -w @orcisgate/server && npm run build -w @orcisgate/web",
+    "start": "node apps/server/dist/index.js",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",

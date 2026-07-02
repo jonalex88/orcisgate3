@@ -99,3 +99,26 @@ npm test
 ```sh
 npm run build
 ```
+
+## Deploying
+
+Optimized for a **single-service deploy** (e.g. Railway): `npm run build` builds
+`packages/domain` → `apps/server` → `apps/web` in order, and `npm start`
+(`node apps/server/dist/index.js`) runs one Express process that serves both the JSON API
+(`/api/*`) and the built SPA (everything else, with a fallback to `index.html` for client-side
+routes) — see the static-serving block in `apps/server/src/app.ts`. One origin, no CORS to
+configure, no separate deploy to keep in sync.
+
+Requires:
+- **Node ≥24** — pinned via `engines` in `package.json` and `.node-version` (needed for the
+  built-in `node:sqlite` module).
+- **A persistent volume for the SQLite file.** The default filesystem on most PaaS platforms is
+  ephemeral and gets wiped on every deploy/restart, which would silently break the "paste a
+  monster once, ever" guarantee the monster library depends on. Mount a volume and point the
+  `DB_PATH` environment variable at a path on it (e.g. `/data/orcisgate.db`).
+- `PORT` is read from the environment automatically (most platforms, including Railway, set this
+  for you). `WEB_ORIGIN` only matters for local dev, where the Vite dev server and the API run on
+  different ports — it's unused once both are served from the same origin in production.
+
+A `railway.json` at the repo root configures the build/start commands and health check
+(`/api/health`) for Railway specifically.
