@@ -25,8 +25,10 @@ simplified in this pass.
 3. **The DM** pastes a monster-stats JSON (from D&D Beyond's Encounter Builder/monster page) to
    add monsters to a **permanent, shared library** — every monster only ever needs to be pasted
    once, ever, across every game. Then pastes an encounter export; any monster it references that's
-   already in the library resolves automatically. Rolling initiative and running combat happens
-   from the same hotbar-driven stat block view as players get for their characters.
+   already in the library resolves automatically — either by D&D Beyond's own id, or (useful for a
+   pre-seeded starter library that doesn't share DDB's id scheme) by a best-effort name match,
+   flagged in the DM view so it's clear which ones to double-check. Rolling initiative and running
+   combat happens from the same hotbar-driven stat block view as players get for their characters.
 4. Dice: click a die face in the Quick Dice tray to queue N of that die, click Roll to resolve them
    all at once — or click an action in the hotbar for a quick generic d20 roll. Either way, it
    posts to everyone's shared roll log in real time.

@@ -1,4 +1,8 @@
 import type { MonsterTemplate } from '@orcisgate/domain'
+import { rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createDb, type Db } from './db.js'
 
@@ -93,5 +97,60 @@ describe('createDb monster templates', () => {
     db.upsertMonsterTemplates([{ ...fakeMonster('16798', 'Bandit'), armorClass: 99 }])
 
     expect(db.getMonsterTemplates(['16798'])[0]?.armorClass).toBe(99)
+  })
+
+  it('finds a monster by normalized name when the exact id is unknown', () => {
+    db.upsertMonsterTemplates([fakeMonster('16798', 'Bandit')])
+    expect(db.getMonsterTemplateByNormalizedName('bandit')?.id).toBe('16798')
+  })
+
+  it('returns null for an unknown normalized name or an empty string', () => {
+    expect(db.getMonsterTemplateByNormalizedName('nothing-like-this')).toBeNull()
+    expect(db.getMonsterTemplateByNormalizedName('')).toBeNull()
+  })
+
+  it('prefers the most recently updated template when names collide', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'))
+    db.upsertMonsterTemplates([fakeMonster('seed:bandit', 'Bandit')])
+
+    vi.setSystemTime(new Date('2026-01-01T00:00:01.000Z')) // a later, real DDB import of the same name
+    db.upsertMonsterTemplates([fakeMonster('16798', 'Bandit')])
+
+    expect(db.getMonsterTemplateByNormalizedName('bandit')?.id).toBe('16798')
+    vi.useRealTimers()
+  })
+})
+
+describe('createDb monster_templates migration', () => {
+  it('backfills normalized_name for a database created before it existed', () => {
+    const dbPath = path.join(tmpdir(), `orcisgate-migration-test-${Date.now()}.db`)
+    try {
+      const legacyDb = new DatabaseSync(dbPath)
+      legacyDb.exec(`
+        CREATE TABLE monster_templates (
+          monster_id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          data TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+      `)
+      legacyDb
+        .prepare('INSERT INTO monster_templates (monster_id, name, data, updated_at) VALUES (?, ?, ?, ?)')
+        .run('16798', 'Bandit', JSON.stringify(fakeMonster('16798', 'Bandit')), new Date().toISOString())
+      legacyDb.close()
+
+      const migratedDb = createDb(dbPath)
+      expect(migratedDb.getMonsterTemplateByNormalizedName('bandit')?.id).toBe('16798')
+      migratedDb.close()
+    } finally {
+      // Best-effort cleanup — Windows can briefly hold the file handle after close(), and a
+      // leftover temp file here doesn't affect the correctness of the test above.
+      try {
+        rmSync(dbPath, { force: true })
+      } catch {
+        // ignore
+      }
+    }
   })
 })

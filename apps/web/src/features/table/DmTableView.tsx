@@ -36,6 +36,7 @@ function DmTableContent({ gameKey }: { gameKey: string }) {
   const [encounterJson, setEncounterJson] = useState('')
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [lastEncounterPayload, setLastEncounterPayload] = useState<unknown | null>(null)
+  const [nameMatchedIds, setNameMatchedIds] = useState<string[]>([])
   const [missingMonsterJson, setMissingMonsterJson] = useState('')
   const [missingImportStatus, setMissingImportStatus] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -45,7 +46,10 @@ function DmTableContent({ gameKey }: { gameKey: string }) {
     if (firstMonster && !selectedMonsterUniqueId) {
       setSelectedMonsterUniqueId(firstMonster.uniqueId)
     }
-    if (!state.activeEncounter) setSelectedMonsterUniqueId(null)
+    if (!state.activeEncounter) {
+      setSelectedMonsterUniqueId(null)
+      setNameMatchedIds([])
+    }
   }, [state.activeEncounter?.id])
 
   const selectedInstance = state.activeEncounter?.monsters.find((m) => m.uniqueId === selectedMonsterUniqueId)
@@ -58,15 +62,16 @@ function DmTableContent({ gameKey }: { gameKey: string }) {
         (id) => !state.activeEncounterMonsters.some((template) => template.id === id),
       )
     : []
-  const missingMonsterLabel = (id: string) =>
+  const monsterInstanceLabel = (id: string) =>
     state.activeEncounter?.monsters.find((m) => m.templateId === id)?.label ?? `id ${id}`
 
   async function handleImportEncounter() {
     setImportStatus(null)
     try {
       const parsed: unknown = JSON.parse(encounterJson)
-      await importEncounter(gameKey, parsed)
+      const result = await importEncounter(gameKey, parsed)
       setLastEncounterPayload(parsed)
+      setNameMatchedIds(result.nameMatchedMonsterIds)
       setEncounterJson('')
     } catch (error) {
       setImportStatus(error instanceof Error ? error.message : 'Could not import that encounter JSON.')
@@ -82,7 +87,8 @@ function DmTableContent({ gameKey }: { gameKey: string }) {
       // Re-resolve the same encounter now that the library has what it was missing — no need to
       // ask the DM to re-paste the whole encounter JSON again.
       if (lastEncounterPayload) {
-        await importEncounter(gameKey, lastEncounterPayload)
+        const result = await importEncounter(gameKey, lastEncounterPayload)
+        setNameMatchedIds(result.nameMatchedMonsterIds)
       }
     } catch (error) {
       setMissingImportStatus(error instanceof Error ? error.message : 'Could not import that monster JSON.')
@@ -126,10 +132,24 @@ function DmTableContent({ gameKey }: { gameKey: string }) {
                 </button>
               </div>
 
+              {nameMatchedIds.some((id) => state.activeEncounterMonsters.some((m) => m.id === id)) && (
+                <div className="border-b border-obsidian-700 bg-obsidian-800 p-3">
+                  <p className="text-xs text-parchment-300">
+                    <span className="font-semibold text-moss-400">Auto-matched by name, worth checking:</span>{' '}
+                    {nameMatchedIds
+                      .filter((id) => state.activeEncounterMonsters.some((m) => m.id === id))
+                      .map(monsterInstanceLabel)
+                      .join(', ')}{' '}
+                    — resolved against a monster with a matching name rather than the exact D&D Beyond id, so
+                    verify the stat block is actually the right one.
+                  </p>
+                </div>
+              )}
+
               {missingMonsterIds.length > 0 && (
                 <div className="border-b border-hp-500 bg-hp-500/10 p-4">
                   <p className="text-sm text-hp-400">
-                    Missing stat blocks for: {missingMonsterIds.map(missingMonsterLabel).join(', ')}. Paste them
+                    Missing stat blocks for: {missingMonsterIds.map(monsterInstanceLabel).join(', ')}. Paste them
                     below to resolve automatically.
                   </p>
                   <textarea

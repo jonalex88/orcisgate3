@@ -82,3 +82,23 @@ replaced by fictional placeholders).
 - **Encounters and monster stat blocks are always two separate pastes.** An encounter only ever
   contains monster *instances* (id reference + per-instance HP/initiative), never the stat block
   itself — mirroring D&D Beyond's own data model rather than inventing a combined format.
+
+### Resolving monsters that don't share D&D Beyond's id scheme
+
+A monster pre-seeded from a source other than D&D Beyond (e.g. an open compendium, for a
+starter library that doesn't require pasting every monster from a live game first) won't have a
+DDB numeric id at all — it has whatever id that source uses. `normalizeMonsterName` (lowercases,
+strips punctuation, and strips the trailing "(A)"/"(B)"-style disambiguation suffix D&D Beyond
+adds to encounter instances) lets `apps/server`'s encounter-import fall back to matching by name
+when the exact id isn't found, re-keying the match under the id the encounter actually asked for
+so nothing downstream needs to know the difference.
+
+This is explicitly a best-effort fallback, not treated as equivalent to an exact id match — worth
+being clear-eyed about the ways it can be wrong:
+- A DM-renamed encounter instance (D&D Beyond lets you rename one, e.g. "Grunk the Bandit") won't
+  normalize to anything a real "Bandit" template matches.
+- Two different monsters that happen to share a name (different sourcebooks, homebrew) could
+  resolve to the wrong stat block. `apps/server`'s response calls out which ids were name-matched
+  (`nameMatchedMonsterIds`) so a caller can flag "verify this one" rather than presenting it with
+  the same confidence as an exact match.
+- Spelling variants across sources (e.g. "Gray Ooze" vs "Grey Ooze") won't match at all.

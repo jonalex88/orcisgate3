@@ -29,6 +29,8 @@ export interface EncounterImportResult {
   encounter: Encounter
   monsters: MonsterTemplate[]
   missingMonsterIds: string[]
+  /** Resolved by a best-effort normalized-name match rather than an exact D&D Beyond id — worth a visible "verify this" hint, not silent. */
+  nameMatchedMonsterIds: string[]
 }
 
 export function submitRoll(gameKey: string, input: SubmitRollInput) {
