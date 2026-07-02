@@ -149,9 +149,14 @@ export function ActionHotbar({ actions, spells = [], onRoll }: ActionHotbarProps
                 type="button"
                 onClick={() => setSelectedIndex((current) => (current === index ? null : index))}
                 className={`relative flex h-16 w-16 flex-col items-center justify-center rounded-lg border-2 bg-obsidian-800 text-center hover:bg-obsidian-700 ${border} ${selectedIndex === index ? 'ring-2 ring-moss-400' : ''}`}
-                title={detail.name}
+                title={entry.kind === 'spell' && entry.spell.concentration ? `${detail.name} (Concentration)` : detail.name}
               >
                 <span className="absolute left-1 top-1 text-[10px] text-parchment-300">{HOTKEYS[index]}</span>
+                {entry.kind === 'spell' && entry.spell.concentration && (
+                  <span className="absolute right-1 top-1 text-[10px]" aria-label="Requires concentration">
+                    🧠
+                  </span>
+                )}
                 <span className="line-clamp-2 px-1 text-[11px] leading-tight text-parchment-100">{detail.name}</span>
               </button>
             )

@@ -32,4 +32,9 @@ describe('fetchCharacterFromDdb', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }))
     await expect(fetchCharacterFromDdb('167672386')).rejects.toThrow('500')
   })
+
+  it('surfaces a clear error when D&D Beyond does not respond in time, rather than hanging', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('The operation was aborted.', 'TimeoutError')))
+    await expect(fetchCharacterFromDdb('167672386')).rejects.toThrow('did not respond within 10s')
+  })
 })

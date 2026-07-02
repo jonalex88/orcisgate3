@@ -80,8 +80,11 @@ export function PlayerTableView() {
 
   if (!character) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-obsidian-950 p-8 text-parchment-300">
-        Connecting…
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-obsidian-950 p-8 text-parchment-300">
+        <p>Connecting…</p>
+        <button type="button" onClick={() => navigate('/')} className="text-sm text-parchment-300 underline hover:text-moss-400">
+          Back to start
+        </button>
       </div>
     )
   }
@@ -98,7 +101,7 @@ export function PlayerTableView() {
       <MoodImageDisplay url={state.moodImageUrl} compact />
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-3">
           <CharacterSummary character={character} />
         </div>
         <RollLogPane rollLog={state.rollLog} onRoll={(label, dice) => roll(label, dice)} />

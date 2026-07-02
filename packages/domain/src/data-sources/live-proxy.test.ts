@@ -17,7 +17,7 @@ describe('LiveProxyDataSource', () => {
 
     expect(result.source).toBe('ddb-live')
     expect(result.data).toEqual(payload)
-    expect(fetch).toHaveBeenCalledWith('/api/characters/167672386')
+    expect(fetch).toHaveBeenCalledWith('/api/characters/167672386', expect.any(Object))
   })
 
   it('throws LiveProxyFetchError with the server-provided message on failure', async () => {
@@ -37,7 +37,7 @@ describe('LiveProxyDataSource', () => {
 
     await new LiveProxyDataSource('http://localhost:3001').fetchCharacter({ characterId: '167672386' })
 
-    expect(fetch).toHaveBeenCalledWith('http://localhost:3001/api/characters/167672386')
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3001/api/characters/167672386', expect.any(Object))
   })
 
   it('appends ?refresh=true when forceRefresh is requested', async () => {
@@ -45,7 +45,16 @@ describe('LiveProxyDataSource', () => {
 
     await new LiveProxyDataSource().fetchCharacter({ characterId: '167672386', forceRefresh: true })
 
-    expect(fetch).toHaveBeenCalledWith('/api/characters/167672386?refresh=true')
+    expect(fetch).toHaveBeenCalledWith('/api/characters/167672386?refresh=true', expect.any(Object))
+  })
+
+  it('surfaces a clear error when the request times out rather than hanging', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('The operation was aborted.', 'TimeoutError')))
+
+    await expect(new LiveProxyDataSource().fetchCharacter({ characterId: '167672386' })).rejects.toMatchObject({
+      message: 'Timed out waiting for a response — the server may be unreachable.',
+      status: 504,
+    })
   })
 
   it('is exported so callers can check error instances', () => {

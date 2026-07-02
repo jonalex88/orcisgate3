@@ -85,6 +85,17 @@ describe('ActionHotbar', () => {
     expect(screen.queryByTitle('Healing Word')).not.toBeInTheDocument()
   })
 
+  it('marks a concentration spell with a concentration indicator', () => {
+    render(
+      <ActionHotbar
+        actions={[]}
+        spells={[makeSpell({ castingEconomy: 'action', concentration: true })]}
+        onRoll={vi.fn()}
+      />,
+    )
+    expect(screen.getByTitle('Healing Word (Concentration)')).toBeInTheDocument()
+  })
+
   it('clicking a slot opens a detail popover with the description, stripped of HTML', async () => {
     const user = userEvent.setup()
     render(<ActionHotbar actions={[makeAction()]} onRoll={vi.fn()} />)

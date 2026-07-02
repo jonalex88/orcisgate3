@@ -7,16 +7,32 @@
 export class CharacterNotFoundError extends Error {}
 export class CharacterPrivateError extends Error {}
 
+/**
+ * D&D Beyond's own uptime/latency isn't something this app controls — without a bound, a slow or
+ * stalled upstream response leaves the request (and the player staring at "Connecting…") hanging
+ * indefinitely with no error to react to. 10s is generous for a normal character fetch.
+ */
+const DDB_FETCH_TIMEOUT_MS = 10_000
+
 export async function fetchCharacterFromDdb(characterId: string): Promise<unknown> {
-  const response = await fetch(
-    `https://character-service.dndbeyond.com/character/v5/character/${characterId}?includeCustomItems=true`,
-    {
-      headers: {
-        accept: 'application/json',
-        'user-agent': 'Mozilla/5.0 (compatible; OrcisGate/0.1; +https://github.com)',
+  let response: Response
+  try {
+    response = await fetch(
+      `https://character-service.dndbeyond.com/character/v5/character/${characterId}?includeCustomItems=true`,
+      {
+        headers: {
+          accept: 'application/json',
+          'user-agent': 'Mozilla/5.0 (compatible; OrcisGate/0.1; +https://github.com)',
+        },
+        signal: AbortSignal.timeout(DDB_FETCH_TIMEOUT_MS),
       },
-    },
-  )
+    )
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(`D&D Beyond did not respond within ${DDB_FETCH_TIMEOUT_MS / 1000}s for character ${characterId}`)
+    }
+    throw error
+  }
 
   if (response.status === 404) {
     throw new CharacterNotFoundError(`No character found with id ${characterId}`)
