@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
+import { Navigate, useParams } from 'react-router'
 import { useGameEvents } from '../../hooks/useGameEvents.js'
 import { useRollSubmitter } from '../../hooks/useRollSubmitter.js'
-import { exitEncounter, importEncounter, rollInitiative, setMoodImage } from '../../lib/api.js'
+import { isConfirmedDm } from '../../lib/dm-flag.js'
+import { exitEncounter, importEncounter, importMonsters, rollInitiative, setMoodImage } from '../../lib/api.js'
 import { DmSettingsPanel } from './DmSettingsPanel.js'
 import { InitiativePane } from './InitiativePane.js'
 import { RollLogPane } from './RollLogPane.js'
@@ -10,14 +11,33 @@ import { SceneCarousel } from './SceneCarousel.js'
 import { StatBlockPanel } from './StatBlockPanel.js'
 import { TableTopBar } from './TableTopBar.js'
 
+/**
+ * Split from DmTableContent specifically so the guard runs before any of the real hooks —
+ * useGameEvents(gameKey, 'dm') opens a real DM-role SSE connection (which receives hidden rolls)
+ * the instant it's called, regardless of what JSX the component eventually returns. Checking
+ * `isConfirmedDm` in the same component after those hooks had already been called would still let
+ * an unconfirmed visitor's browser briefly connect as the DM before the redirect took effect.
+ */
 export function DmTableView() {
   const { gameKey = '' } = useParams<{ gameKey: string }>()
+
+  if (!isConfirmedDm(gameKey)) {
+    return <Navigate to={`/game/${encodeURIComponent(gameKey)}/connect`} replace />
+  }
+
+  return <DmTableContent gameKey={gameKey} />
+}
+
+function DmTableContent({ gameKey }: { gameKey: string }) {
   const state = useGameEvents(gameKey, 'dm')
   const roll = useRollSubmitter(gameKey, { name: 'Dungeon Master', role: 'dm', characterId: null })
 
   const [selectedMonsterUniqueId, setSelectedMonsterUniqueId] = useState<string | null>(null)
   const [encounterJson, setEncounterJson] = useState('')
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [lastEncounterPayload, setLastEncounterPayload] = useState<unknown | null>(null)
+  const [missingMonsterJson, setMissingMonsterJson] = useState('')
+  const [missingImportStatus, setMissingImportStatus] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
@@ -31,19 +51,41 @@ export function DmTableView() {
   const selectedInstance = state.activeEncounter?.monsters.find((m) => m.uniqueId === selectedMonsterUniqueId)
   const selectedMonster = state.activeEncounterMonsters.find((m) => m.id === selectedInstance?.templateId) ?? null
 
+  // Derived live from state (not a one-off import response) so it stays correct across
+  // reconnects/refreshes, and clears itself automatically once the missing monsters are resolved.
+  const missingMonsterIds = state.activeEncounter
+    ? [...new Set(state.activeEncounter.monsters.map((m) => m.templateId))].filter(
+        (id) => !state.activeEncounterMonsters.some((template) => template.id === id),
+      )
+    : []
+  const missingMonsterLabel = (id: string) =>
+    state.activeEncounter?.monsters.find((m) => m.templateId === id)?.label ?? `id ${id}`
+
   async function handleImportEncounter() {
     setImportStatus(null)
     try {
       const parsed: unknown = JSON.parse(encounterJson)
-      const result = await importEncounter(gameKey, parsed)
-      setImportStatus(
-        result.missingMonsterIds.length > 0
-          ? `Loaded, but missing stat blocks for monster id(s) ${result.missingMonsterIds.join(', ')} — paste them in DM Settings, then reload this encounter.`
-          : null,
-      )
+      await importEncounter(gameKey, parsed)
+      setLastEncounterPayload(parsed)
       setEncounterJson('')
     } catch (error) {
       setImportStatus(error instanceof Error ? error.message : 'Could not import that encounter JSON.')
+    }
+  }
+
+  async function handleImportMissingMonsters() {
+    setMissingImportStatus(null)
+    try {
+      const parsed: unknown = JSON.parse(missingMonsterJson)
+      await importMonsters(parsed)
+      setMissingMonsterJson('')
+      // Re-resolve the same encounter now that the library has what it was missing — no need to
+      // ask the DM to re-paste the whole encounter JSON again.
+      if (lastEncounterPayload) {
+        await importEncounter(gameKey, lastEncounterPayload)
+      }
+    } catch (error) {
+      setMissingImportStatus(error instanceof Error ? error.message : 'Could not import that monster JSON.')
     }
   }
 
@@ -59,6 +101,7 @@ export function DmTableView() {
       <div className="flex flex-1 overflow-hidden">
         <InitiativePane
           encounter={state.activeEncounter}
+          connectedPlayers={state.connectedPlayers}
           selectedMonsterUniqueId={selectedMonsterUniqueId}
           onSelectMonster={setSelectedMonsterUniqueId}
         />
@@ -82,6 +125,31 @@ export function DmTableView() {
                   Exit Encounter
                 </button>
               </div>
+
+              {missingMonsterIds.length > 0 && (
+                <div className="border-b border-hp-500 bg-hp-500/10 p-4">
+                  <p className="text-sm text-hp-400">
+                    Missing stat blocks for: {missingMonsterIds.map(missingMonsterLabel).join(', ')}. Paste them
+                    below to resolve automatically.
+                  </p>
+                  <textarea
+                    className="mt-2 h-24 w-full max-w-lg rounded border border-obsidian-700 bg-obsidian-900 p-2 font-mono text-xs text-parchment-100 outline-none focus:border-moss-500"
+                    value={missingMonsterJson}
+                    onChange={(e) => setMissingMonsterJson(e.target.value)}
+                    placeholder="Paste the missing monster stat-block JSON here"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleImportMissingMonsters()}
+                    disabled={missingMonsterJson.trim().length === 0}
+                    className="mt-2 rounded bg-moss-500 px-3 py-1.5 text-sm font-medium text-obsidian-950 hover:bg-moss-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Import &amp; Refresh
+                  </button>
+                  {missingImportStatus && <p className="mt-2 text-xs text-hp-400">{missingImportStatus}</p>}
+                </div>
+              )}
+
               <StatBlockPanel monster={selectedMonster} onRollAction={(label) => roll(label, [{ sides: 20, count: 1 }])} />
             </>
           ) : (

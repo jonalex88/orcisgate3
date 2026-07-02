@@ -55,7 +55,7 @@ describe('POST /api/games/:key/encounters and roll-initiative', () => {
     expect(res.body.encounter.monsters).toHaveLength(6)
   })
 
-  it('rolls initiative for every monster and player once an encounter is active', async () => {
+  it('rolls initiative for every monster once an encounter is active', async () => {
     const { app } = makeApp()
     await request(app).post('/api/monsters').send(monsterStatsFixture)
     const key = uniqueKey()
@@ -68,9 +68,18 @@ describe('POST /api/games/:key/encounters and roll-initiative', () => {
     expect(res.body.encounter.monsters.every((m: { initiative: number }) => typeof m.initiative === 'number')).toBe(
       true,
     )
-    expect(res.body.encounter.players.every((p: { initiative: number }) => typeof p.initiative === 'number')).toBe(
-      true,
-    )
+  })
+
+  it('does not touch the encounter’s own (stale, imported) player roster', async () => {
+    const { app } = makeApp()
+    await request(app).post('/api/monsters').send(monsterStatsFixture)
+    const key = uniqueKey()
+    const activateRes = await request(app).post(`/api/games/${key}/encounters`).send(sampleEncounter)
+    const encounterId = activateRes.body.encounter.id
+
+    const res = await request(app).post(`/api/games/${key}/encounters/${encounterId}/roll-initiative`)
+
+    expect(res.body.encounter.players.every((p: { initiative: number | null }) => p.initiative === null)).toBe(true)
   })
 
   it('returns 404 rolling initiative for an encounter that is not the active one', async () => {
@@ -130,6 +139,58 @@ describe('GET /api/games/:key/events (SSE)', () => {
 
       const text = new TextDecoder().decode(value)
       expect(text).toContain('"type":"snapshot"')
+    } finally {
+      server.close()
+    }
+  })
+
+  it('rolls initiative for a live-connected player, not the encounter’s imported roster', async () => {
+    const { app } = makeApp()
+    const server = app.listen(0)
+    const port = (server.address() as AddressInfo).port
+    const key = uniqueKey()
+
+    try {
+      await request(app).post('/api/monsters').send(monsterStatsFixture)
+      const activateRes = await request(app).post(`/api/games/${key}/encounters`).send(sampleEncounter)
+      const encounterId = activateRes.body.encounter.id
+
+      const controller = new AbortController()
+      const response = await fetch(
+        `http://localhost:${port}/api/games/${key}/events?role=player&characterId=900000010&name=Test+Adventurer`,
+        { signal: controller.signal },
+      )
+      const reader = response.body!.getReader()
+      const decoder = new TextDecoder()
+
+      await request(app).post(`/api/games/${key}/encounters/${encounterId}/roll-initiative`)
+
+      // Reads may split/coalesce SSE frames unpredictably, so accumulate and scan rather than
+      // assuming one event lands per read() call — the connection itself already emits a
+      // "joined the roster" event before the roll-initiative-triggered one we're looking for.
+      let buffer = ''
+      let rolled: { characterId: string; initiative: number | null } | undefined
+      for (let i = 0; i < 20 && !rolled; i++) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        for (const frame of buffer.split('\n\n')) {
+          const jsonText = frame.replace(/^data: /, '').trim()
+          if (!jsonText) continue
+          const parsed = JSON.parse(jsonText) as {
+            type: string
+            connectedPlayers?: { characterId: string; initiative: number | null }[]
+          }
+          if (parsed.type === 'roster-updated') {
+            rolled = parsed.connectedPlayers?.find(
+              (p) => p.characterId === '900000010' && typeof p.initiative === 'number',
+            )
+          }
+        }
+      }
+      controller.abort()
+
+      expect(rolled).toBeDefined()
     } finally {
       server.close()
     }

@@ -1,4 +1,4 @@
-import type { Encounter } from '@orcisgate/domain'
+import type { ConnectedPlayer, Encounter } from '@orcisgate/domain'
 
 interface Combatant {
   key: string
@@ -13,12 +13,15 @@ interface Combatant {
 
 interface InitiativePaneProps {
   encounter: Encounter | null
+  /** Who's actually connected to this game right now — not the encounter's own imported roster,
+   * which is often a stale/unrelated snapshot from whenever the DM built it in D&D Beyond. */
+  connectedPlayers: ConnectedPlayer[]
   selectedMonsterUniqueId?: string | null
   onSelectMonster?: (uniqueId: string) => void
 }
 
-function toCombatants(encounter: Encounter): Combatant[] {
-  const monsters: Combatant[] = encounter.monsters.map((m) => ({
+function toCombatants(encounter: Encounter | null, connectedPlayers: ConnectedPlayer[]): Combatant[] {
+  const monsters: Combatant[] = (encounter?.monsters ?? []).map((m) => ({
     key: `monster-${m.uniqueId}`,
     name: m.label,
     subtitle: 'Monster',
@@ -28,7 +31,7 @@ function toCombatants(encounter: Encounter): Combatant[] {
     isMonster: true,
     monsterUniqueId: m.uniqueId,
   }))
-  const players: Combatant[] = encounter.players.map((p) => ({
+  const players: Combatant[] = connectedPlayers.map((p) => ({
     key: `player-${p.characterId}`,
     name: p.name,
     subtitle: p.classByLine,
@@ -41,14 +44,22 @@ function toCombatants(encounter: Encounter): Combatant[] {
   return [...monsters, ...players].sort((a, b) => (b.initiative ?? -1) - (a.initiative ?? -1))
 }
 
-export function InitiativePane({ encounter, selectedMonsterUniqueId, onSelectMonster }: InitiativePaneProps) {
-  const combatants = encounter ? toCombatants(encounter) : []
+export function InitiativePane({
+  encounter,
+  connectedPlayers,
+  selectedMonsterUniqueId,
+  onSelectMonster,
+}: InitiativePaneProps) {
+  const combatants = toCombatants(encounter, connectedPlayers)
 
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col border-r border-obsidian-700 bg-obsidian-900 p-4">
       <h2 className="text-sm font-semibold tracking-wide text-moss-400">Initiative</h2>
 
       {!encounter && <p className="mt-4 text-sm text-parchment-300">No active encounter.</p>}
+      {combatants.length === 0 && encounter && (
+        <p className="mt-4 text-sm text-parchment-300">No one at the table yet.</p>
+      )}
 
       <ol className="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
         {combatants.map((c) => {

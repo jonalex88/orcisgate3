@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { findScene, PLACEHOLDER_SCENES } from './scenes.js'
+import { findScene, SCENES } from './scenes.js'
 
 describe('findScene', () => {
   it('finds a scene by its url', () => {
-    const first = PLACEHOLDER_SCENES[0]!
+    const first = SCENES[0]!
     expect(findScene(first.url)).toEqual(first)
   })
 

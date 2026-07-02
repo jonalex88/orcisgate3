@@ -66,27 +66,41 @@ Documented rather than silently glossed over:
   and the round/turn counter — but never monster data (SQLite) or character data (fetched
   fresh/cached). Persisting room state too is a natural next step once this shape has been used
   for a real session.
-- **No accounts or access control.** The game key and the "I am the Dungeon Master" checkbox are
-  entirely trust-based — this is designed for a group who already trust each other at the same
-  table, not a public multi-tenant product. Anyone with the key can act as DM.
+- **No accounts or real access control.** The game key is entirely trust-based — this is designed
+  for a group who already trust each other at the same table, not a public multi-tenant product.
+  The "I am the Dungeon Master" checkbox does set a per-browser flag (checked before the DM view's
+  data even loads) so a stale bookmark or shared link can't *accidentally* land someone on the DM
+  view — but it's trivially bypassable via devtools by anyone who actually wants to, by design;
+  it stops accidents, not determined access.
 - **Rolls are client-computed and trusted**, not re-rolled/verified server-side — matches the
   spec's described click-to-roll UX; this isn't an anti-cheat system.
 - **One active encounter at a time per game**, loaded by pasting its JSON — there's no saved
   "library of encounters to pick from" UI yet (the spec's "DM sees a list of uploaded encounters"),
-  just load/exit. Monsters *do* persist permanently; encounters currently don't.
-- **Player initiative is a flat d20** when the DM rolls initiative for the whole encounter (no
-  Dex modifier — the room doesn't hold live character ability scores). A player can still roll
-  their own initiative correctly via the dice tray; it'll show properly in the roll log either way.
-- **The initiative pane shows the encounter's own player HP snapshot**, not each connected
-  player's live current HP — live-data overlay for players in the initiative view is a follow-up.
+  just load/exit. Monsters *do* persist permanently; encounters currently don't. If an encounter
+  references a monster the shared library doesn't have yet, the DM gets a banner naming exactly
+  which one(s) — pasting the stat block there re-resolves the same encounter automatically,
+  without needing to re-paste the whole thing.
+- **The initiative pane and "Roll Initiative" both use who's actually connected to the game**, not
+  the encounter's own imported player list (which is often a stale, unrelated snapshot from
+  whenever the DM originally built the encounter in D&D Beyond — confirmed by testing against a
+  real export). Connecting/disconnecting a player's browser tab updates the roster live for
+  everyone, with a short grace period on disconnect so a page refresh doesn't look like someone
+  leaving and rejoining, and any initiative they'd already rolled survives the reconnect.
+- **Player initiative is still a flat d20** when the DM rolls for the whole encounter (no Dex
+  modifier — the room doesn't hold live character ability scores). A player can still roll their
+  own initiative correctly via the dice tray; it'll show properly in the roll log either way.
+- **The initiative pane doesn't show connected players' live current HP** — that's still a
+  follow-up; it shows presence and initiative, not health, for players (monsters do show HP).
 - **Hotbar actions roll a generic d20**, not action-specific damage/attack dice — D&D Beyond
   doesn't give structured dice notation for most actions (free-text descriptions instead), so
   auto-rolling the "right" dice per action needs text parsing that isn't built yet.
 - **Monster stat blocks don't show alignment/size/type/challenge rating** — D&D Beyond references
   those via lookup tables this app doesn't have a confirmed mapping for; showing a guessed value
   would be worse than not showing one. See `packages/domain/README.md`.
-- **Mood images are placeholder gradients** with generic names (tavern, forest, dungeon, etc.) —
-  real artwork can be dropped in later by pointing a scene's `url` at an actual image.
+- **Mood images** are real photos (in `apps/web/public/scenes`) rather than the placeholder
+  gradients from earlier in this project — the DM can broadcast any of them to the whole table.
+  Adding more is just dropping a file in that folder and adding an entry to
+  `apps/web/src/features/table/scenes.ts`.
 
 ## Testing
 

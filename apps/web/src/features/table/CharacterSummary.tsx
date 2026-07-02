@@ -1,5 +1,6 @@
 import type { Character } from '@orcisgate/domain'
 import type { ReactNode } from 'react'
+import { classByLine } from '../../lib/character-display.js'
 
 interface CharacterSummaryProps {
   character: Character
@@ -16,7 +17,7 @@ export function CharacterSummary({ character }: CharacterSummaryProps) {
     <div className="text-parchment-100">
       <h1 className="text-3xl font-semibold">{character.name}</h1>
       <p className="text-parchment-300">
-        {character.classes.map((c) => `${c.name}${c.subclass ? ` (${c.subclass})` : ''} ${c.level}`).join(' / ')}
+        {classByLine(character)}
         {' · Level '}
         {character.level}
       </p>

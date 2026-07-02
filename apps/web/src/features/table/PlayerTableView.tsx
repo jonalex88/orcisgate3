@@ -1,8 +1,9 @@
 import { LiveProxyDataSource, mapCharacter, type Character } from '@orcisgate/domain'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate, useParams, useSearchParams } from 'react-router'
-import { useGameEvents } from '../../hooks/useGameEvents.js'
+import { useGameEvents, type PlayerConnectionInfo } from '../../hooks/useGameEvents.js'
 import { useRollSubmitter } from '../../hooks/useRollSubmitter.js'
+import { classByLine } from '../../lib/character-display.js'
 import { ActionHotbar } from './ActionHotbar.js'
 import { CharacterSummary } from './CharacterSummary.js'
 import { MoodImageDisplay } from './MoodImageDisplay.js'
@@ -18,7 +19,17 @@ export function PlayerTableView() {
 
   const [character, setCharacter] = useState<Character | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const state = useGameEvents(gameKey, 'player')
+
+  // Connecting announces "this player is at the table" (see useGameEvents) — held back until the
+  // character has actually loaded so the roster shows a real name, not a placeholder.
+  const playerInfo: PlayerConnectionInfo | undefined = useMemo(
+    () =>
+      character
+        ? { characterId, name: character.name, classByLine: classByLine(character), avatarUrl: character.avatarUrl }
+        : undefined,
+    [character, characterId],
+  )
+  const state = useGameEvents(gameKey, 'player', playerInfo)
   const roll = useRollSubmitter(gameKey, {
     name: character?.name ?? 'Player',
     role: 'player',

@@ -10,13 +10,19 @@ import {
   exitEncounter,
   getOrCreateRoom,
   removeClient,
+  rollInitiativeForConnectedPlayers,
   setMoodImage,
   setShowDmRollsToPlayers,
   updateActiveEncounter,
+  upsertConnectedPlayer,
 } from '../game-room.js'
 
 function parseRole(value: unknown): ActorRole {
   return value === 'dm' ? 'dm' : 'player'
+}
+
+function queryString(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null
 }
 
 function isValidRollBody(body: unknown): body is Omit<RollEvent, 'id' | 'gameKey' | 'timestamp'> {
@@ -37,7 +43,9 @@ export function createGamesRouter(db: Db): Router {
 
   router.get('/:key/events', (req, res) => {
     const room = getOrCreateRoom(req.params.key!)
-    const client = { res, role: parseRole(req.query['role']) }
+    const role = parseRole(req.query['role'])
+    const characterId = queryString(req.query['characterId'])
+    const client = { res, role, characterId }
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -46,6 +54,23 @@ export function createGamesRouter(db: Db): Router {
     })
 
     addClient(room, client)
+
+    // The SSE connection doubles as "this player is at the table" — connect = join the roster,
+    // disconnect (see removeClient) = leave it. A page refresh just reconnects and re-announces.
+    if (role === 'player' && characterId) {
+      upsertConnectedPlayer(
+        room,
+        {
+          characterId,
+          name: queryString(req.query['name']) ?? 'Unknown',
+          classByLine: queryString(req.query['classByLine']) ?? '',
+          avatarUrl: queryString(req.query['avatarUrl']),
+          initiative: null,
+        },
+        client,
+      )
+    }
+
     req.on('close', () => removeClient(room, client))
   })
 
@@ -102,11 +127,14 @@ export function createGamesRouter(db: Db): Router {
         const dexModifier = template ? abilityModifier(template.abilityScores.dexterity) : 0
         return { ...monster, initiative: rollDie(20) + dexModifier }
       }),
-      // Simplification: players roll a flat d20 here (no Dex modifier) since the room doesn't
-      // hold live character ability scores — a player can still roll their own initiative with
-      // their real modifier via the dice tray and it'll show correctly in the roll log either way.
-      players: room.activeEncounter.players.map((player) => ({ ...player, initiative: rollDie(20) })),
     }
+
+    // Simplification: connected players roll a flat d20 here (no Dex modifier) since the room
+    // doesn't hold live character ability scores — a player can still roll their own initiative
+    // with their real modifier via the dice tray and it'll show correctly in the roll log either
+    // way. Rolls for whoever's actually connected right now, not the encounter's own imported
+    // (and often stale/unrelated) player roster.
+    rollInitiativeForConnectedPlayers(room, () => rollDie(20))
 
     updateActiveEncounter(room, updatedEncounter)
     res.json({ encounter: updatedEncounter })

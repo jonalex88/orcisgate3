@@ -11,10 +11,14 @@ export function MoodImageDisplay({ url }: MoodImageDisplayProps) {
 
   return (
     <div
-      className={`mb-6 flex h-40 items-end rounded-lg border border-obsidian-700 bg-gradient-to-br p-4 ${scene?.gradient ?? 'from-obsidian-800 to-obsidian-900'}`}
-      style={scene ? undefined : { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      className="mb-6 flex h-48 items-end rounded-lg border border-obsidian-700 bg-cover bg-center p-4"
+      style={{ backgroundImage: `url(${url})` }}
     >
-      {scene && <span className="text-lg font-semibold tracking-wide text-parchment-100">{scene.name}</span>}
+      {scene && (
+        <span className="rounded bg-black/60 px-3 py-1 text-lg font-semibold tracking-wide text-parchment-100">
+          {scene.name}
+        </span>
+      )}
     </div>
   )
 }

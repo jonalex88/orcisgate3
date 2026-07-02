@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { markAsDm } from '../../lib/dm-flag.js'
 
 export function JoinGameScreen() {
   const [gameKey, setGameKey] = useState('')
@@ -10,7 +11,12 @@ export function JoinGameScreen() {
     e.preventDefault()
     const key = gameKey.trim()
     if (!key) return
-    navigate(isDm ? `/game/${encodeURIComponent(key)}/dm` : `/game/${encodeURIComponent(key)}/connect`)
+    if (isDm) {
+      markAsDm(key)
+      navigate(`/game/${encodeURIComponent(key)}/dm`)
+    } else {
+      navigate(`/game/${encodeURIComponent(key)}/connect`)
+    }
   }
 
   return (
