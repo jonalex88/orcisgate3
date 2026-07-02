@@ -16,10 +16,12 @@ interface StatBlockPanelProps {
 }
 
 /**
- * Deliberately doesn't show alignment/size/type/challenge rating — D&D Beyond references those
- * via lookup tables (alignmentId, sizeId, typeId, challengeRatingId) this app doesn't have a
- * confirmed mapping for (see packages/domain/README.md). Showing a guessed value would be worse
- * than not showing one.
+ * Alignment/size/type/challenge rating only render when present on the template — D&D Beyond
+ * references those via lookup tables (alignmentId, sizeId, typeId, challengeRatingId) this app
+ * doesn't have a confirmed mapping for (see packages/domain/README.md), so a DDB-sourced monster
+ * simply won't have them set. A monster from a source that hands these over as plain values (e.g.
+ * Open5e) shows them normally — showing a guessed value would be worse than not showing one, but
+ * there's no need to withhold a value that was never guessed in the first place.
  */
 export function StatBlockPanel({ monster, onRollAction }: StatBlockPanelProps) {
   if (!monster) {
@@ -30,10 +32,20 @@ export function StatBlockPanel({ monster, onRollAction }: StatBlockPanelProps) {
     )
   }
 
+  const subtitle = [monster.size, monster.creatureType, monster.alignment].filter(Boolean).join(' · ')
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6">
-        <h1 className="text-3xl font-semibold tracking-wide text-parchment-100">{monster.name}</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-3xl font-semibold tracking-wide text-parchment-100">{monster.name}</h1>
+          {monster.challengeRating && (
+            <span className="rounded border border-moss-500 px-2 py-0.5 text-xs font-semibold text-moss-400">
+              CR {monster.challengeRating}
+            </span>
+          )}
+        </div>
+        {subtitle && <p className="mt-1 text-sm text-parchment-300">{subtitle}</p>}
 
         <div className="mt-4 grid grid-cols-3 gap-4">
           <StatCard label="Armor Class" value={String(monster.armorClass)} sub={monster.armorClassDescription} />

@@ -7,6 +7,8 @@ export * from './spellcasting-table.js'
 export * from './parse-action-blocks.js'
 export * from './monster-mapper.js'
 export * from './encounter-mapper.js'
+export * from './open5e-schema.js'
+export * from './open5e-mapper.js'
 // Generic D&D math, not coupled to DDB's raw shape — worth exposing publicly, unlike the rest of
 // derive-stats.ts which operates on RawCharacterData.
 export { abilityModifier, proficiencyBonusForLevel } from './derive-stats.js'

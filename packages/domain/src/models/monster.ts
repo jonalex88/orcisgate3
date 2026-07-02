@@ -9,15 +9,17 @@ export interface HitPointDice {
 }
 
 /**
- * A monster stat block, keyed by D&D Beyond's own numeric monster id — this id is the primary
- * key for persistent storage (see apps/server's monster_templates table) since it's stable and
- * globally meaningful (the same id means the same monster in every encounter, for every DM).
+ * A monster stat block. `id` is the primary key for persistent storage (see apps/server's
+ * monster_templates table): for a D&D Beyond monster it's DDB's own numeric id (stable and
+ * globally meaningful — the same id means the same monster in every encounter, for every DM); for
+ * a monster from another source (e.g. Open5e) it's that source's own key, namespaced so it can
+ * never collide with a real DDB numeric id (see open5e-mapper.ts).
  *
- * Deliberately narrower than the raw DDB payload: alignment/size/type/challenge-rating/skills/
- * saving-throws all reference small lookup tables (alignmentId, sizeId, typeId, challengeRatingId,
- * skillId) this app doesn't have a verified mapping for — same "don't guess an undocumented
- * lookup and risk showing a wrong value" principle as the character mapper. Not shown until a
- * real reference table is confirmed; see packages/domain/README.md.
+ * `challengeRating`/`creatureType`/`size`/`alignment` are optional and only populated by sources
+ * that hand them over as plain, unambiguous values — D&D Beyond references all of these via small
+ * numeric lookup tables (alignmentId, sizeId, typeId, challengeRatingId) this app doesn't have a
+ * verified mapping for, so a DDB-sourced template leaves them unset rather than guessing (same
+ * principle as the character mapper). See packages/domain/README.md.
  */
 export interface MonsterTemplate {
   id: string
@@ -32,4 +34,8 @@ export interface MonsterTemplate {
   actions: ActionItem[]
   sourceUrl: string
   avatarUrl: string | null
+  challengeRating?: string
+  creatureType?: string
+  size?: string
+  alignment?: string
 }
